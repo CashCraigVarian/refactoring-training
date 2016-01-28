@@ -34,27 +34,9 @@ namespace Refactoring
 
                     if (validPassword == true)
                     {
-                        ShowMessage(ConsoleColor.Green,"Login successful! Welcome " + name + "!");
-                        
-                        double balance = ShowRemainingBalance(users, name, password);
+                        AccessTusc(users, products, name, password);
 
-                        while (true)
-                        {
-                            ShowProductList(products);
-                         
-                            int num = Convert.ToInt32(PromptInput("Enter a number:")) - 1;
-
-                            if (num == EXIT)
-                            {
-                                ExitTusc(users, products, name, password, balance);
-
-                                return;
-                            }
-                            else
-                            {
-                                balance = PurchaseProduct(products[num], balance);
-                            }
-                        }
+                        return;
                     }
                     else
                     {
@@ -72,6 +54,31 @@ namespace Refactoring
             }
 
             PromptInput("Press Enter key to exit");
+        }
+
+        private static void AccessTusc(List<User> users, List<Product> products, String name, string password)
+        {
+            ShowMessage(ConsoleColor.Green, "Login successful! Welcome " + name + "!");
+
+            double balance = ShowRemainingBalance(users, name, password);
+
+            while (true)
+            {
+                ShowProductList(products);
+
+                int num = Convert.ToInt32(PromptInput("Enter a number:")) - 1;
+
+                if (num == EXIT)
+                {
+                    ExitTusc(users, products, name, password, balance);
+
+                    return;
+                }
+                else
+                {
+                    balance = PurchaseProduct(products[num], balance);
+                }
+            }
         }
 
         private static void ExitTusc(List<User> users, List<Product> products, String name, string password, double balance)
