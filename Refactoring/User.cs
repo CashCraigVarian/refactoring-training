@@ -13,8 +13,14 @@ namespace Refactoring
         [JsonProperty("Username")]
         public string Name;
         [JsonProperty("Password")]
-        public string Pwd;
+        public string Password;
         [JsonProperty("Balance")]
-        public double Bal;
-    }
+        public double Balance;
+
+        public void ShowBalance()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Your balance is " + this.Balance.ToString("C"));
+        }
+    }   
 }

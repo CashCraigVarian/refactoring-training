@@ -10,11 +10,9 @@ namespace Refactoring
 {
     public class Tusc
     {
-        public static void Start(List<User> usrs, List<Product> prods)
+        public static void Start(List<User> users, List<Product> products)
         {
-            // Write welcome message
-            Console.WriteLine("Welcome to TUSC");
-            Console.WriteLine("---------------");
+            ShowWelcome();
 
             // Login
             Login:
@@ -31,7 +29,7 @@ namespace Refactoring
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    User user = usrs[i];
+                    User user = users[i];
                     // Check that name matches
                     if (user.Name == name)
                     {
@@ -50,10 +48,10 @@ namespace Refactoring
                     bool valPwd = false; // Is valid password?
                     for (int i = 0; i < 5; i++)
                     {
-                        User user = usrs[i];
+                        User user = users[i];
 
                         // Check that name and password match
-                        if (user.Name == name && user.Pwd == pwd)
+                        if (user.Name == name && user.Password == pwd)
                         {
                             valPwd = true;
                         }
@@ -64,27 +62,20 @@ namespace Refactoring
                     {
                         loggedIn = true;
 
-                        // Show welcome message
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine();
-                        Console.WriteLine("Login successful! Welcome " + name + "!");
-                        Console.ResetColor();
+                        ShowMessage(ConsoleColor.Green,"Login successful! Welcome " + name + "!");
                         
                         // Show remaining balance
-                        double bal = 0;
+                        double balance = 0;
                         for (int i = 0; i < 5; i++)
                         {
-                            User usr = usrs[i];
+                            User user = users[i];
 
                             // Check that name and password match
-                            if (usr.Name == name && usr.Pwd == pwd)
+                            if (user.Name == name && user.Password == pwd)
                             {
-                                bal = usr.Bal;
+                                balance = user.Balance;
 
-                                // Show balance 
-                                Console.WriteLine();
-                                Console.WriteLine("Your balance is " + usr.Bal.ToString("C"));
+                                user.ShowBalance();
                             }
                         }
 
@@ -96,10 +87,10 @@ namespace Refactoring
                             Console.WriteLine("What would you like to buy?");
                             for (int i = 0; i < 7; i++)
                             {
-                                Product prod = prods[i];
+                                Product prod = products[i];
                                 Console.WriteLine(i + 1 + ": " + prod.Name + " (" + prod.Price.ToString("C") + ")");
                             }
-                            Console.WriteLine(prods.Count + 1 + ": Exit");
+                            Console.WriteLine(products.Count + 1 + ": Exit");
 
                             // Prompt for user input
                             Console.WriteLine("Enter a number:");
@@ -112,119 +103,123 @@ namespace Refactoring
                             if (num == 7)
                             {
                                 // Update balance
-                                foreach (var usr in usrs)
+                                foreach (var user in users)
                                 {
                                     // Check that name and password match
-                                    if (usr.Name == name && usr.Pwd == pwd)
+                                    if (user.Name == name && user.Password == pwd)
                                     {
-                                        usr.Bal = bal;
+                                        user.Balance = balance;
                                     }
                                 }
 
-                                // Write out new balance
-                                string json = JsonConvert.SerializeObject(usrs, Formatting.Indented);
-                                File.WriteAllText(@"Data\Users.json", json);
+                                WriteNewBalance(users);
 
-                                // Write out new quantities
-                                string json2 = JsonConvert.SerializeObject(prods, Formatting.Indented);
-                                File.WriteAllText(@"Data\Products.json", json2);
+                                WriteNewQuantities(products);
 
-
-                                // Prevent console from closing
-                                Console.WriteLine();
-                                Console.WriteLine("Press Enter key to exit");
-                                Console.ReadLine();
+                                ShowClosingPrompt();
                                 return;
                             }
                             else
                             {
                                 Console.WriteLine();
-                                Console.WriteLine("You want to buy: " + prods[num].Name);
-                                Console.WriteLine("Your balance is " + bal.ToString("C"));
+                                Console.WriteLine("You want to buy: " + products[num].Name);
+                                Console.WriteLine("Your balance is " + balance.ToString("C"));
 
-                                // Prompt for user input
-                                Console.WriteLine("Enter amount to purchase:");
-                                answer = Console.ReadLine();
-                                int qty = Convert.ToInt32(answer);
+                                int quantity = PromptForQuantity();
 
                                 // Check if balance - quantity * price is less than 0
-                                if (bal - prods[num].Price * qty < 0)
+                                if (balance - products[num].Price * quantity < 0)
                                 {
-                                    Console.Clear();
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine();
-                                    Console.WriteLine("You do not have enough money to buy that.");
-                                    Console.ResetColor();
+                                    ShowMessage(ConsoleColor.Red, "You do not have enough money to buy that.");
                                     continue;
                                 }
 
                                 // Check if quantity is less than quantity
-                                if (prods[num].Qty <= qty)
+                                if (products[num].Quantity <= quantity)
                                 {
-                                    Console.Clear();
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Sorry, " + prods[num].Name + " is out of stock");
-                                    Console.ResetColor();
+                                    ShowMessage(ConsoleColor.Red, "Sorry, " + products[num].Name + " is out of stock");
                                     continue;
                                 }
 
                                 // Check if quantity is greater than zero
-                                if (qty > 0)
+                                if (quantity > 0)
                                 {
                                     // Balance = Balance - Price * Quantity
-                                    bal = bal - prods[num].Price * qty;
+                                    balance = balance - products[num].Price * quantity;
 
                                     // Quanity = Quantity - Quantity
-                                    prods[num].Qty = prods[num].Qty - qty;
+                                    products[num].Quantity = products[num].Quantity - quantity;
 
                                     Console.Clear();
                                     Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("You bought " + qty + " " + prods[num].Name);
-                                    Console.WriteLine("Your new balance is " + bal.ToString("C"));
+                                    Console.WriteLine("You bought " + quantity + " " + products[num].Name);
+                                    Console.WriteLine("Your new balance is " + balance.ToString("C"));
                                     Console.ResetColor();
                                 }
                                 else
                                 {
-                                    // Quantity is less than zero
-                                    Console.Clear();
-                                    Console.ForegroundColor = ConsoleColor.Yellow;
-                                    Console.WriteLine();
-                                    Console.WriteLine("Purchase cancelled");
-                                    Console.ResetColor();
+                                    ShowMessage(ConsoleColor.Yellow, "Purchase cancelled");
                                 }
                             }
                         }
                     }
                     else
                     {
-                        // Invalid Password
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine();
-                        Console.WriteLine("You entered an invalid password.");
-                        Console.ResetColor();
+                        ShowMessage(ConsoleColor.Red, "You entered an invalid password.");
 
                         goto Login;
                     }
                 }
                 else
                 {
-                    // Invalid User
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine();
-                    Console.WriteLine("You entered an invalid user.");
-                    Console.ResetColor();
+                    ShowMessage(ConsoleColor.Red, "You entered an invalid user.");
 
                     goto Login;
                 }
             }
 
-            // Prevent console from closing
+            ShowClosingPrompt();
+        }
+
+        private static int PromptForQuantity()
+        {
+            Console.WriteLine("Enter amount to purchase:");
+            string answer = Console.ReadLine();
+            return Convert.ToInt32(answer);
+        }
+
+        private static void ShowClosingPrompt()
+        {
             Console.WriteLine();
             Console.WriteLine("Press Enter key to exit");
             Console.ReadLine();
+        }
+
+        private static void ShowMessage(ConsoleColor color, string message)
+        {
+            Console.Clear();
+            Console.ForegroundColor = color;
+            Console.WriteLine();
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static void WriteNewQuantities(List<Product> products)
+        {
+            string json2 = JsonConvert.SerializeObject(products, Formatting.Indented);
+            File.WriteAllText(@"Data\Products.json", json2);
+        }
+
+        private static void WriteNewBalance(List<User> users)
+        {
+            string json = JsonConvert.SerializeObject(users, Formatting.Indented);
+            File.WriteAllText(@"Data\Users.json", json);
+        }
+
+        private static void ShowWelcome()
+        {
+            Console.WriteLine("Welcome to TUSC");
+            Console.WriteLine("---------------");
         }
     }
 }
