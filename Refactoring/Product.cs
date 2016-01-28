@@ -16,5 +16,15 @@ namespace Refactoring
         public double Price;
         [JsonProperty("Quantity")]
         public int Quantity;
+
+        public bool IsInStock(int quantity)
+        {
+            return this.Quantity <= quantity;
+        }
+
+        public bool HasEnoughBalance(double balance, int quantity)
+        {
+            return balance - this.Price * quantity < 0;
+        }
     }
 }

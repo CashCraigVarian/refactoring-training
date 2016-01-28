@@ -22,5 +22,15 @@ namespace Refactoring
             Console.WriteLine();
             Console.WriteLine("Your balance is " + this.Balance.ToString("C"));
         }
+
+        public bool IsValid(string name)
+        {
+            return this.Name == name;
+        }
+
+        public bool IsValid(string name, string password)
+        {
+            return this.Name == name && this.Password == password;
+        }
     }   
 }
